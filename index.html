@@ -1,48 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Employee Tracker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="manifest.json">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      padding: 20px;
-    }
-    #timer {
-      font-size: 2em;
-      margin: 20px 0;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    #branding {
-      position: absolute;
-      bottom: 10px;
-      left: 0;
-      right: 0;
-      font-size: 0.7em;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Employee Tracker</h1>
-    <p>Logged in as: <b id="username">[Your Name Here]</b></p>
-    <div id="timer">00:00:00</div>
-    <button id="startBtn">Start Work</button>
-    <button id="stopBtn" disabled>Stop Work</button>
-  </div>
-  <div id="branding">Your Company Name</div>
-  <script src="app.js"></script>
-</body>
-</html>
+html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);}
+body{
+  background: linear-gradient(180deg, var(--dp-black) 0%, #1a1a1a 30%, #fff 100%);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+
+.app {
+  width:100%; max-width:560px; background:linear-gradient(180deg,#fff 0%, #fff 100%); border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,.25); overflow:hidden;
+}
+
+header{
+  background: linear-gradient(90deg,var(--dp-black), var(--dp-red));
+  color:#fff; padding:14px 16px; display:flex; gap:12px; align-items:center;
+}
+#logo { width:48px;height:48px;border-radius:8px; object-fit:contain; background:#fff;padding:6px; }
+header .title { font-size:18px; font-weight:700; }
+header .subtitle { font-size:12px; opacity:0.9; }
+
+.content{padding:18px;}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+label{display:block;font-size:13px;margin-bottom:6px;}
+input[type="text"], input[type="tel"]{
+  width:100%; padding:10px 12px; border-radius:10px; border:1px solid #ddd; box-sizing:border-box; font-size:14px;
+  background: #fff;
+}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+button{
+  background:var(--dp-black); color:#fff; border:none; padding:10px 14px; font-size:15px; border-radius:10px; cursor:pointer;
+}
+button.secondary{ background:#666; }
+
+#timer{ font-size:24px; margin:10px 0; font-weight:700; color:var(--dp-black); }
+.info{ font-size:13px; color:#444; margin-top:8px; }
+
+footer{
+  background:#fafafa; border-top:1px solid #eee; padding:12px 16px; display:flex;flex-direction:column; gap:6px;
+  font-size:13px;
+}
+.contact{ color:var(--dp-red); font-weight:700; }
+.muted{font-size:12px;color:#666}
+
+.status{margin-top:10px;font-size:13px}
+.logItem{background:var(--card-bg);border-radius:8px;padding:8px;margin-top:8px;text-align:left;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
