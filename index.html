@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Employee Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      padding: 20px;
+    }
+    #timer {
+      font-size: 2em;
+      margin: 20px 0;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    #branding {
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      font-size: 0.7em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Employee Tracker</h1>
+    <p>Logged in as: <b id="username">[Your Name Here]</b></p>
+    <div id="timer">00:00:00</div>
+    <button id="startBtn">Start Work</button>
+    <button id="stopBtn" disabled>Stop Work</button>
+  </div>
+  <div id="branding">Your Company Name</div>
+  <script src="app.js"></script>
+</body>
+</html>
