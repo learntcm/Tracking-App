@@ -10,6 +10,7 @@ const HERO_SLIDES = [
   { img: "ad3.png", title: "XPeng X9", subtitle: "Future-Ready EV • Explore with DrivePK" }
 ];
 
+let deferredPrompt = null;
 let timerInterval = null;
 let startTime = null;
 let tracking = false;
@@ -46,9 +47,15 @@ async function post(payload) {
 
   const res = await fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    headers: { 
+      "Content-Type": "text/plain;charset=utf-8"
+    },
     body: JSON.stringify(payload)
   });
+
+  if (!res.ok) {
+    throw new Error(`Fetch error ${res.status}: ${res.statusText}`);
+  }
 
   const text = await res.text();
 
@@ -70,17 +77,19 @@ async function getBatteryPercent() {
   }
 }
 
-// Local session
+/** Local session handling */
 function saveSession(token, phone, name) {
   localStorage.setItem("dp_token", token);
   localStorage.setItem("dp_phone", phone);
   localStorage.setItem("dp_name", name);
 }
+
 function clearSession() {
   localStorage.removeItem("dp_token");
   localStorage.removeItem("dp_phone");
   localStorage.removeItem("dp_name");
 }
+
 function getSession() {
   return {
     token: localStorage.getItem("dp_token") || "",
@@ -94,13 +103,14 @@ function showClock() {
   $("clockCard").classList.remove("hidden");
   $("logoutBtn").style.display = "inline-block";
 }
+
 function showLogin() {
   $("loginCard").classList.remove("hidden");
   $("clockCard").classList.add("hidden");
   $("logoutBtn").style.display = "none";
 }
 
-// Timer
+/** Timer functions */
 function startTimer() {
   startTime = new Date();
   if (timerInterval) clearInterval(timerInterval);
@@ -113,13 +123,14 @@ function startTimer() {
       `${String(hr).padStart(2, "0")}:${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   }, 1000);
 }
+
 function stopTimer() {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = null;
   $("timer").textContent = "00:00:00";
 }
 
-/* HERO */
+/** HERO slides */
 let heroIndex = 0;
 
 function renderDots() {
@@ -149,7 +160,7 @@ function autoHero() {
   }, 5000);
 }
 
-/* LOGIN */
+/** Login functionality */
 async function login() {
   try {
     const name = ($("loginName").value || "").trim();
@@ -183,6 +194,7 @@ async function login() {
   }
 }
 
+/** Tracking functions */
 async function track(eventType, extra) {
   const s = getSession();
   return await post(Object.assign({
@@ -193,7 +205,6 @@ async function track(eventType, extra) {
   }, extra || {}));
 }
 
-/* START / STOP */
 async function startWork() {
   const s = getSession();
   if (!s.token || !s.phone) {
@@ -303,6 +314,7 @@ async function stopWork() {
   alert("Stopped!");
 }
 
+/** Logout functionality */
 function logout() {
   tracking = false;
   if (watchId != null) {
@@ -315,7 +327,7 @@ function logout() {
   setLoginStatus("Logged out.");
 }
 
-/* INIT */
+/** INIT */
 window.addEventListener("load", () => {
   autoHero();
 
@@ -339,3 +351,24 @@ window.addEventListener("load", () => {
     });
   });
 });
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); // Prevent default install prompt
+  deferredPrompt = e; // Save the install event
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.style.display = 'block';
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then((choiceResult) => {
+    if (choiceResult.outcome === 'accepted') {
+      console.log("User accepted the install prompt ✅");
+    } else {
+      console.log("User dismissed the install prompt ❌");
+    }
+    deferredPrompt = null;
+  });
+}
