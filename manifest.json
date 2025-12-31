@@ -1,10 +1,13 @@
 {
-  "name": "Employee Tracker",
-  "short_name": "Tracker",
+  "name": "DrivePK Employee Tracker",
+  "short_name": "Employee Tracker",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ef1d1d",
+  "description": "A Progressive Web Application for employee tracking, clock-in, and attendance.",
   "icons": [
     {
       "src": "icon-192.png",
@@ -15,8 +18,26 @@
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
     }
   ],
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff"
+  "features": {
+    "track_attendance": true,
+    "location_sync": true,
+    "offline_support": true
+  },
+  "categories": [
+    "productivity",
+    "business",
+    "attendance"
+  ],
+  "permissions": [
+    "geolocation",
+    "storage",
+    "network"
+  ]
 }
