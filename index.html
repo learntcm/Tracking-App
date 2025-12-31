@@ -3,123 +3,280 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Employee Time Tracking</title>
+  <title>DrivePK Employee Tracker</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ef1d1d" />
 
   <style>
     :root{
       --dp-red:#ef1d1d;
-      --dp-black:#000;
-      --card:#fff;
+      --dp-black:#000000;
+      --card:#ffffff;
       --muted:#666;
+      --soft:#f6f6f6;
     }
+
     html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;}
     body{
-      background: linear-gradient(180deg, var(--dp-black) 0%, #1a1a1a 35%, #ffffff 100%);
-      display:flex;align-items:center;justify-content:center;padding:18px;
+      min-height:100vh;
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(239,29,29,.35) 0%, rgba(0,0,0,0) 60%),
+        radial-gradient(900px 600px at 80% 0%, rgba(239,29,29,.25) 0%, rgba(0,0,0,0) 55%),
+        linear-gradient(180deg, var(--dp-black) 0%, #130404 40%, #0b0b0b 70%, #000 100%);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:18px;
+      color:#fff;
+      box-sizing:border-box;
     }
+
     .app{
       width:100%;
-      max-width:640px;
-      background:var(--card);
-      border-radius:14px;
-      box-shadow:0 6px 24px rgba(0,0,0,.25);
+      max-width:720px;
+      border-radius:18px;
       overflow:hidden;
+      box-shadow:0 10px 34px rgba(0,0,0,.45);
+      background:rgba(255,255,255,.06);
+      backdrop-filter: blur(6px);
+      border:1px solid rgba(255,255,255,.10);
     }
+
+    /* Top bar */
     header{
-      background: linear-gradient(90deg,var(--dp-black), var(--dp-red));
-      color:#fff;
+      background: linear-gradient(90deg, var(--dp-black), #1a0000 35%, var(--dp-red));
       padding:14px 16px;
       display:flex;
+      align-items:center;
       justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex;
       align-items:center;
       gap:10px;
+      min-width:0;
     }
-    header .title{font-size:18px;font-weight:700;}
-    header .sub{font-size:12px;opacity:.9;}
-    .content{padding:16px;}
-    .card{
-      border:1px solid #eee;
-      border-radius:12px;
-      padding:14px;
-      margin-bottom:12px;
+    .logoBox{
+      width:46px;height:46px;border-radius:12px;
       background:#fff;
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+      flex:0 0 auto;
+      box-shadow:0 4px 14px rgba(0,0,0,.25);
     }
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-    label{display:block;font-size:13px;margin-bottom:6px;}
+    .logoBox img{width:100%;height:100%;object-fit:contain;padding:6px;box-sizing:border-box;}
+    .brandTxt{min-width:0;}
+    .title{font-size:18px;font-weight:800;line-height:1.1;margin:0;}
+    .sub{font-size:12px;opacity:.9;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* Hero banner */
+    .hero{
+      position:relative;
+      height:180px;
+      background:#111;
+      overflow:hidden;
+    }
+    .hero img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      filter:saturate(1.05) contrast(1.05);
+    }
+    .heroOverlay{
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,.35) 55%, rgba(0,0,0,.55) 100%),
+                  linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.75) 100%);
+      display:flex;
+      align-items:flex-end;
+      padding:14px 16px;
+      box-sizing:border-box;
+    }
+    .heroText{
+      max-width:80%;
+    }
+    .heroText .h1{
+      font-size:18px;
+      font-weight:900;
+      margin:0 0 6px;
+    }
+    .heroText .h2{
+      margin:0;
+      font-size:12px;
+      opacity:.92;
+      line-height:1.35;
+    }
+    .dots{
+      position:absolute;
+      right:14px;
+      bottom:14px;
+      display:flex;
+      gap:6px;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:rgba(255,255,255,.35);
+      border:1px solid rgba(255,255,255,.25);
+    }
+    .dot.active{
+      background:var(--dp-red);
+      border-color:rgba(255,255,255,.25);
+    }
+
+    /* Content */
+    .content{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .card{
+      background:#fff;
+      color:#111;
+      border-radius:14px;
+      padding:14px;
+      border:1px solid #eee;
+      box-shadow:0 6px 18px rgba(0,0,0,.08);
+    }
+
+    h3{
+      margin:0 0 10px;
+      font-size:15px;
+      font-weight:800;
+      color:#111;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    label{display:block;font-size:12px;margin-bottom:6px;color:#111;}
     input{
       width:100%;
       padding:10px 12px;
-      border-radius:10px;
+      border-radius:12px;
       border:1px solid #ddd;
       box-sizing:border-box;
       font-size:14px;
       outline:none;
+      background:#fff;
     }
-    input:focus{border-color:#bbb;}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    input:focus{border-color:#bbb; box-shadow:0 0 0 3px rgba(239,29,29,.10);}
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+    }
+
     button{
       border:none;
       padding:10px 14px;
-      border-radius:10px;
+      border-radius:12px;
       cursor:pointer;
       font-size:14px;
+      font-weight:700;
       background:var(--dp-black);
       color:#fff;
     }
     button.secondary{background:#666;}
     button.danger{background:var(--dp-red);}
     button:disabled{opacity:.55;cursor:not-allowed;}
-    .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4;}
-    #timer{
-      font-size:26px;
-      font-weight:800;
-      margin:10px 0 0;
-      color:var(--dp-black);
+
+    .hint{
+      font-size:12px;
+      color:#444;
+      margin-top:10px;
+      line-height:1.4;
+      background:var(--soft);
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #eee;
     }
+
+    #timer{
+      font-size:30px;
+      font-weight:900;
+      margin:10px 0 0;
+      color:#111;
+      letter-spacing:1px;
+    }
+
     #status{
       margin-top:10px;
       font-size:13px;
       padding:10px 12px;
-      border-radius:10px;
-      background:#fafafa;
+      border-radius:12px;
+      background:#f7f7f7;
       border:1px solid #eee;
+      color:#111;
     }
+
     footer{
       padding:12px 16px;
-      border-top:1px solid #eee;
-      background:#fafafa;
       font-size:12px;
-      color:var(--muted);
+      opacity:.85;
+      text-align:center;
+      border-top:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25);
     }
-    .pill{
-      display:inline-block;
-      padding:4px 8px;
-      border-radius:999px;
-      background:#111;
-      color:#fff;
-      font-size:11px;
-      margin-left:6px;
+
+    /* Hide/show sections */
+    .hidden{display:none !important;}
+
+    /* Mobile */
+    @media (max-width:560px){
+      .grid{grid-template-columns:1fr;}
+      .hero{height:165px;}
+      .heroText{max-width:92%;}
     }
   </style>
 </head>
 
 <body>
   <div class="app">
+
     <header>
-      <div>
-        <div class="title">Employee Time Tracking <span class="pill">DrivePK</span></div>
-        <div class="sub">Google Sheets + Apps Script (Free)</div>
+      <div class="brand">
+        <div class="logoBox">
+          <!-- Put your logo file in repo root and name it: logo.png -->
+          <img src="logo.png" alt="DrivePK Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="brandTxt">
+          <div class="title">DrivePK Employee Tracker</div>
+          <div class="sub">Clock In • Location • Attendance</div>
+        </div>
       </div>
-      <div style="font-size:12px;opacity:.9;text-align:right">
-        Works on HTTPS<br/>(Netlify)
-      </div>
+
+      <button id="logoutBtn" class="secondary" style="display:none;">Logout</button>
     </header>
+
+    <!-- HERO BANNER (Ads) -->
+    <div class="hero">
+      <!-- Put your ad images in repo root: ad1.jpg, ad2.jpg, ad3.jpg (or png) -->
+      <img id="heroImg" src="ad1.jpg" alt="Advertisement Banner" onerror="this.src='ad1.jpg'">
+      <div class="heroOverlay">
+        <div class="heroText">
+          <p class="h1" id="heroTitle">DrivePK Updates</p>
+          <p class="h2" id="heroSubtitle">Add any promotional images here (inspection offers, hiring, auctions, etc.).</p>
+        </div>
+      </div>
+      <div class="dots" id="heroDots"></div>
+    </div>
 
     <div class="content">
 
-      <!-- Registration (Optional) -->
-      <div class="card">
-        <h3 style="margin:0 0 10px;font-size:15px;">Employee Registration (One-Time)</h3>
+      <!-- REGISTRATION SCREEN (FIRST) -->
+      <div class="card" id="registerCard">
+        <h3>Employee Registration (One-Time)</h3>
+
         <div class="grid">
           <div>
             <label>Employee Name</label>
@@ -138,24 +295,26 @@
             <input id="townCity" type="text" placeholder="Rawalpindi" />
           </div>
         </div>
+
         <div style="margin-top:10px">
           <label>Street Address</label>
           <input id="streetAddress" type="text" placeholder="Office / Area / Address" />
         </div>
 
-        <div class="row" style="margin-top:12px">
-          <button id="registerBtn" class="secondary">Register Employee</button>
+        <div class="row">
+          <button id="registerBtn" class="danger">Register & Continue</button>
         </div>
 
         <div class="hint">
-          Registration saves Name + Phone + CNIC into <b>Employees</b> sheet.
-          Later, tracking only needs phone — the sheet will auto-fill EmployeeName + CNIC.
+          After registration, this device will open the Clock In/Out screen automatically for this phone number.
         </div>
+
+        <div id="regStatus" class="hint" style="display:none;"></div>
       </div>
 
-      <!-- Tracking -->
-      <div class="card">
-        <h3 style="margin:0 0 10px;font-size:15px;">Clock In / Clock Out</h3>
+      <!-- CLOCK SCREEN (ONLY AFTER REGISTERED) -->
+      <div class="card hidden" id="clockCard">
+        <h3>Clock In / Clock Out</h3>
 
         <div class="row">
           <button id="startBtn">Start (Clock In)</button>
@@ -165,8 +324,7 @@
         <div id="timer">00:00:00</div>
 
         <div class="hint">
-          Location works only on <b>HTTPS</b> or <b>localhost</b>.
-          After Start, it will send live <b>PING</b> updates automatically.
+          Please allow location permission when prompted. Tracking runs on HTTPS and records GPS in your Google Sheet.
         </div>
 
         <div id="status">Status: Ready</div>
@@ -175,7 +333,7 @@
     </div>
 
     <footer>
-      Tip: If location does not work, open the Netlify link in Chrome and allow Location permission.
+      DrivePK • Internal Staff Use
     </footer>
 
     <script src="app.js"></script>
