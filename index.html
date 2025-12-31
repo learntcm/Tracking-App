@@ -5,47 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DrivePK Employee Tracker</title>
 
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#ef1d1d" />
 
   <style>
     :root{
       --dp-red:#ef1d1d;
       --dp-black:#000000;
-      --card:#ffffff;
-      --muted:#666;
-      --soft:#f6f6f6;
-      --panel-grey:#e6e6e6;     /* medium grey for lower half */
+      --bg-gray:#dcdcdc;
     }
 
     html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;}
     body{
-      min-height:100vh;
-      background:
-        radial-gradient(1200px 600px at 20% 10%, rgba(239,29,29,.35) 0%, rgba(0,0,0,0) 60%),
-        radial-gradient(900px 600px at 80% 0%, rgba(239,29,29,.25) 0%, rgba(0,0,0,0) 55%),
-        linear-gradient(180deg, var(--dp-black) 0%, #130404 40%, #0b0b0b 70%, #000 100%);
+      background: linear-gradient(180deg, #000 0%, #1a1a1a 35%, #000 100%);
       display:flex;
       align-items:flex-start;
       justify-content:center;
-      padding:18px;
+      padding:18px 12px;
       color:#fff;
-      box-sizing:border-box;
     }
 
     .app{
       width:100%;
-      max-width:720px;
+      max-width:760px;
       border-radius:18px;
       overflow:hidden;
-      box-shadow:0 10px 34px rgba(0,0,0,.45);
-      background:rgba(255,255,255,.06);
-      backdrop-filter: blur(6px);
       border:1px solid rgba(255,255,255,.10);
+      box-shadow:0 10px 34px rgba(0,0,0,.45);
+      background:#111;
     }
 
     header{
-      background: linear-gradient(90deg, var(--dp-black), #1a0000 35%, var(--dp-red));
+      position:relative;
+      z-index:5;
+      background: linear-gradient(90deg, #000, #1a0000 45%, var(--dp-red));
+      color:#fff;
       padding:14px 16px;
       display:flex;
       align-items:center;
@@ -59,74 +53,120 @@
       gap:10px;
       min-width:0;
     }
-    .logoBox{
-      width:46px;height:46px;border-radius:12px;
-      background:#fff;
-      display:flex;align-items:center;justify-content:center;
-      overflow:hidden;
-      flex:0 0 auto;
-      box-shadow:0 4px 14px rgba(0,0,0,.25);
-    }
-    .logoBox img{width:100%;height:100%;object-fit:contain;padding:6px;box-sizing:border-box;}
-    .brandTxt{min-width:0;}
-    .title{font-size:18px;font-weight:800;line-height:1.1;margin:0;}
-    .sub{font-size:12px;opacity:.9;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-    /* HERO BANNER */
-    .hero{
-      position:relative;
-      height:180px;
-      background:#111;
+    .logo{
+      width:46px;height:46px;
+      border-radius:12px;
+      background:#fff;
       overflow:hidden;
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;
+    }
+    .logo img{
+      width:100%;height:100%;
+      object-fit:contain;
+      padding:6px;
+      box-sizing:border-box;
+    }
+
+    .titleWrap{min-width:0}
+    .title{
+      font-weight:900;
+      font-size:18px;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .subtitle{
+      font-size:12px;
+      opacity:.92;
+      margin-top:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .logoutBtn{
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:800;
+      cursor:pointer;
+      background:#000;
+      color:#fff;
+      display:none;
+    }
+
+    /* HERO — bigger + brighter */
+    .hero{
+      height:260px; /* bigger (more room) */
+      background:#111;
+      position:relative;
+      z-index:1;
+      border-bottom:1px solid rgba(255,255,255,.10);
     }
     .hero img{
       width:100%;
       height:100%;
       object-fit:cover;
-      display:block;
 
-      /* brighten slightly to avoid “too dark” */
-      filter: brightness(1.12) contrast(1.05) saturate(1.05);
+      /* brighten + lighten */
+      filter: brightness(1.38) contrast(1.05) saturate(1.15);
     }
 
-    /* Reduced darkness overlay (this was making it too dark) */
+    /* lighter overlay so the image doesn't get dark */
     .heroOverlay{
-      position:absolute; inset:0;
+      position:absolute;
+      inset:0;
       background:
-        linear-gradient(90deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,.18) 55%, rgba(0,0,0,.35) 100%),
-        linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.10) 45%, rgba(0,0,0,.45) 100%);
+        linear-gradient(90deg, rgba(0,0,0,.22), rgba(0,0,0,.04) 60%, rgba(0,0,0,.18)),
+        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.04) 60%, rgba(0,0,0,.18));
       display:flex;
       align-items:flex-end;
       padding:14px 16px;
       box-sizing:border-box;
     }
-    .heroText{max-width:80%;}
-    .heroText .h1{font-size:18px;font-weight:900;margin:0 0 6px;}
-    .heroText .h2{margin:0;font-size:12px;opacity:.92;line-height:1.35;}
+
+    .heroText{
+      max-width:70%;
+    }
+    .heroTitle{
+      margin:0 0 6px;
+      font-weight:900;
+      font-size:22px;
+      text-shadow:0 3px 12px rgba(0,0,0,.40);
+    }
+    .heroSub{
+      margin:0;
+      font-size:13px;
+      opacity:.95;
+      text-shadow:0 3px 12px rgba(0,0,0,.35);
+    }
+
     .dots{
       position:absolute;
-      right:14px;
-      bottom:14px;
+      right:12px;
+      bottom:12px;
       display:flex;
-      gap:6px;
+      gap:7px;
     }
     .dot{
-      width:8px;height:8px;border-radius:999px;
+      width:9px;height:9px;
+      border-radius:999px;
       background:rgba(255,255,255,.35);
-      border:1px solid rgba(255,255,255,.25);
+      border:1px solid rgba(255,255,255,.22);
+      cursor:pointer;
     }
     .dot.active{
       background:var(--dp-red);
-      border-color:rgba(255,255,255,.25);
+      border-color:rgba(255,255,255,.15);
     }
 
-    /* CONTENT AREA — change to medium grey */
+    /* CONTENT area */
     .content{
+      background: var(--bg-gray); /* medium grey */
       padding:14px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      background: var(--panel-grey);
     }
 
     .card{
@@ -135,80 +175,63 @@
       border-radius:14px;
       padding:14px;
       border:1px solid #eee;
-      box-shadow:0 6px 18px rgba(0,0,0,.08);
+      box-shadow:0 6px 18px rgba(0,0,0,.10);
+      margin-bottom:12px;
     }
 
-    h3{margin:0 0 10px;font-size:15px;font-weight:800;color:#111;}
+    h3{margin:0 0 10px;font-size:16px}
 
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-    label{display:block;font-size:12px;margin-bottom:6px;color:#111;}
+    label{display:block;font-size:12px;margin:10px 0 6px}
     input{
       width:100%;
-      padding:10px 12px;
+      padding:11px 12px;
       border-radius:12px;
       border:1px solid #ddd;
       box-sizing:border-box;
       font-size:14px;
-      outline:none;
-      background:#fff;
     }
-    input:focus{border-color:#bbb; box-shadow:0 0 0 3px rgba(239,29,29,.10);}
-    input.invalid{border-color:#b00020; box-shadow:0 0 0 3px rgba(176,0,32,.12);}
 
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px;}
-
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     button{
       border:none;
-      padding:10px 14px;
       border-radius:12px;
+      padding:11px 14px;
+      font-weight:900;
       cursor:pointer;
-      font-size:14px;
-      font-weight:700;
-      background:var(--dp-black);
+      background:#000;
       color:#fff;
+      font-size:14px;
     }
-    button.secondary{background:#666;}
-    button.danger{background:var(--dp-red);}
-    button:disabled{opacity:.55;cursor:not-allowed;}
+    button.red{background:var(--dp-red)}
+    button:disabled{opacity:.6;cursor:not-allowed}
 
-    .hint{
-      font-size:12px;
-      color:#444;
-      margin-top:10px;
-      line-height:1.4;
-      background:#f3f3f3;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid #e7e7e7;
-    }
-
-    #timer{font-size:30px;font-weight:900;margin:10px 0 0;color:#111;letter-spacing:1px;}
-
-    #status, #regStatus{
+    .status{
       margin-top:10px;
       font-size:13px;
+      background:#f3f3f3;
+      border:1px solid #e7e7e7;
       padding:10px 12px;
       border-radius:12px;
-      background:#f7f7f7;
-      border:1px solid #eee;
-      color:#111;
     }
 
-    footer{
-      padding:12px 16px;
-      font-size:12px;
-      opacity:.9;
-      text-align:center;
-      border-top:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.25);
+    #timer{
+      font-size:34px;
+      font-weight:900;
+      margin-top:12px;
+      color:#000;
+      letter-spacing:1px;
     }
 
     .hidden{display:none !important;}
 
-    @media (max-width:560px){
-      .grid{grid-template-columns:1fr;}
-      .hero{height:165px;}
-      .heroText{max-width:92%;}
+    footer{
+      background: rgba(0,0,0,.22);
+      border-top:1px solid rgba(255,255,255,.10);
+      padding:10px 12px;
+      text-align:center;
+      font-size:12px;
+      opacity:.9;
+      color:#fff;
     }
   </style>
 </head>
@@ -218,25 +241,25 @@
 
     <header>
       <div class="brand">
-        <div class="logoBox">
-          <!-- If you don't have logo.png, change this to icon.png -->
-          <img src="logo.png" alt="DrivePK Logo" onerror="this.src='icon.png'">
+        <div class="logo">
+          <img src="logo.png" alt="DrivePK" onerror="this.src='icon.png'">
         </div>
-        <div class="brandTxt">
+        <div class="titleWrap">
           <div class="title">DrivePK Employee Tracker</div>
-          <div class="sub">Clock In • Location • Attendance</div>
+          <div class="subtitle">Clock In • Location • Attendance</div>
         </div>
       </div>
 
-      <button id="logoutBtn" class="secondary" style="display:none;">Logout</button>
+      <button id="logoutBtn" class="logoutBtn">Logout</button>
     </header>
 
+    <!-- HERO -->
     <div class="hero">
-      <img id="heroImg" src="ad1.jpg" alt="Advertisement Banner">
+      <img id="heroImg" src="ad1.png" alt="Banner">
       <div class="heroOverlay">
         <div class="heroText">
-          <p class="h1" id="heroTitle">DrivePK Updates</p>
-          <p class="h2" id="heroSubtitle">Upload your own banners anytime.</p>
+          <p class="heroTitle" id="heroTitle">DrivePK Updates</p>
+          <p class="heroSub" id="heroSubtitle">Latest featured vehicles & campaigns.</p>
         </div>
       </div>
       <div class="dots" id="heroDots"></div>
@@ -244,66 +267,49 @@
 
     <div class="content">
 
-      <div class="card" id="registerCard">
-        <h3>Employee Registration (One-Time)</h3>
+      <!-- LOGIN FIRST (NO REGISTRATION) -->
+      <div class="card" id="loginCard">
+        <h3>Employee Login</h3>
 
-        <div class="grid">
-          <div>
-            <label>Employee Name <span style="color:#b00020">*</span></label>
-            <input id="empName" type="text" placeholder="Dr Khan" />
-          </div>
-          <div>
-            <label>Phone Number <span style="color:#b00020">*</span></label>
-            <input id="empPhone" type="tel" placeholder="0300..., 300..., +92300..., 0092300..." />
-          </div>
-          <div>
-            <label>CNIC (Optional)</label>
-            <input id="cnic" type="text" placeholder="61101-1234567-1" />
-          </div>
-          <div>
-            <label>City</label>
-            <input id="townCity" type="text" placeholder="Rawalpindi" />
-          </div>
-        </div>
+        <label>Employee Name <span style="color:var(--dp-red)">*</span></label>
+        <input id="loginName" type="text" placeholder="Your name (exactly as in Employees sheet)" />
 
-        <div style="margin-top:10px">
-          <label>Street Address</label>
-          <input id="streetAddress" type="text" placeholder="Office / Area / Address" />
-        </div>
+        <label>Phone Number <span style="color:var(--dp-red)">*</span></label>
+        <input id="loginPhone" type="text" placeholder="0300..., 300..., +92300..., 0092300..." />
+
+        <label>PIN <span style="color:var(--dp-red)">*</span></label>
+        <input id="loginPin" type="password" placeholder="Your PIN" />
 
         <div class="row">
-          <button id="registerBtn" class="danger">Register & Continue</button>
+          <button class="red" id="loginBtn">Login</button>
         </div>
 
-        <div class="hint">
-          Name and phone number are required. CNIC is optional.
-        </div>
-
-        <div id="regStatus" style="display:none;"></div>
+        <div class="status" id="loginStatus">Status: Ready</div>
       </div>
 
+      <!-- CLOCK SCREEN -->
       <div class="card hidden" id="clockCard">
         <h3>Clock In / Clock Out</h3>
 
         <div class="row">
           <button id="startBtn">Start (Clock In)</button>
-          <button id="stopBtn" class="danger" disabled>Stop (Clock Out)</button>
+          <button class="red" id="stopBtn" disabled>Stop (Clock Out)</button>
         </div>
 
         <div id="timer">00:00:00</div>
 
-        <div class="hint">
-          Please allow location permission when prompted.
+        <div class="status" id="statusBox">
+          Status: Ready
         </div>
 
-        <div id="status">Status: Ready</div>
+        <div style="margin-top:10px;font-size:12px;color:#333;">
+          Tip: Location works best on HTTPS. Allow location permission in Chrome.
+        </div>
       </div>
 
     </div>
 
-    <footer>
-      DrivePK • Internal Staff Use
-    </footer>
+    <footer>DrivePK • Internal Staff Use</footer>
 
     <script src="app.js"></script>
   </div>
