@@ -1,7 +1,7 @@
 // app.js — Employee Time Tracking (Google Sheets via Apps Script)
 
 // 1) Paste your deployed Apps Script Web App URL here:
-const GOOGLE_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwPbktoB4gV6vs-vWsaurUdOwdo3nC0RosxjUq5O0e9WDkf9pPWKiGUk8Lp3DglmAtFA/exec";
 
 // --- State ---
 let timerInterval = null;
