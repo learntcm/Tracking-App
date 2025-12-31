@@ -1,7 +1,7 @@
 // app.js — DrivePK Employee Tracker
 
 // IMPORTANT: Paste your Apps Script Web App URL here
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxhwvE-R5rlsKL-7XIwMHPbbG1jgLyEissP837vjV-y4hRxamtXY__HjlqrFrIrdmq5VA/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIeab3XNb28woA16KGEoqV10INZcK96gBYn2GhklodaRPdH4ZiA9HvzXRsCs-QW2B9ug/exec";
 
 const HERO_SLIDES = [
   { img: "ad1.jpg", title: "MG U9 Pickup", subtitle: "Built for Pakistan • Powered by DrivePK" },
