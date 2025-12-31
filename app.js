@@ -1,6 +1,6 @@
 // DrivePK Employee Tracker (Login-first)
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxr66cZeRfYybSsIpej-ZPQ9nGVlg7BhVXuGoOaPye9pGFSD_jnHbC8DujeGVWqPo9TJA/exec"; 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQnSfcxLtVDC93tuEvp4PPef1iRK6ekHXKgoHvAN_SYqdmVa5HjHe0DblGOIWGnpC4/exec"; 
 // Example:
 // const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxx/exec";
 
