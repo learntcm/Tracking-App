@@ -1,7 +1,14 @@
-// app.js — Employee Time Tracking (Google Sheets via Apps Script)
+// app.js — DrivePK Employee Tracker (Registration gate + Hero ads + Tracking)
 
 // 1) Paste your deployed Apps Script Web App URL here:
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwPbktoB4gV6vs-vWsaurUdOwdo3nC0RosxjUq5O0e9WDkf9pPWKiGUk8Lp3DglmAtFA/exec";
+const GOOGLE_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+
+// 2) HERO BANNER IMAGES (put these files in repo root)
+const HERO_SLIDES = [
+  { img: "ad1.jpg", title: "DrivePK Updates", subtitle: "Promote inspection offers, auctions, hiring, etc." },
+  { img: "ad2.jpg", title: "Inspection Campaign", subtitle: "Upload your own banners anytime." },
+  { img: "ad3.jpg", title: "DrivePK Auctions", subtitle: "Add new ads by changing filenames in app.js." }
+];
 
 // --- State ---
 let timerInterval = null;
@@ -10,24 +17,9 @@ let tracking = false;
 let watchId = null;
 let lastPingAt = 0;
 
-// --- Helpers ---
 const $ = (id) => document.getElementById(id);
 
-function setStatus(msg, ok = true) {
-  const el = $("status");
-  if (!el) return;
-  el.textContent = "Status: " + msg;
-  el.style.color = ok ? "#0a7a2f" : "#b00020";
-}
-
-function nowText() {
-  return new Date().toLocaleString();
-}
-
-/**
- * Normalize Pakistani phone into 03XXXXXXXXX
- * Accepts: 0300..., 300..., 0092300..., +92300..., 92 300..., +92 0300..., spaces/dashes
- */
+// ---- Phone Normalization (Pakistan) ----
 function normalizePkPhone(input) {
   if (!input) return "";
   let num = String(input).trim();
@@ -57,8 +49,22 @@ async function getBatteryPercent() {
   }
 }
 
+function setStatus(msg, ok = true) {
+  const el = $("status");
+  if (!el) return;
+  el.textContent = "Status: " + msg;
+  el.style.color = ok ? "#0a7a2f" : "#b00020";
+}
+
+function setRegStatus(msg, ok = true) {
+  const el = $("regStatus");
+  if (!el) return;
+  el.style.display = "block";
+  el.textContent = msg;
+  el.style.color = ok ? "#0a7a2f" : "#b00020";
+}
+
 async function sendToGoogleSheet(payload) {
-  // Apps Script expects JSON in postData.contents
   const res = await fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -75,15 +81,48 @@ async function sendToGoogleSheet(payload) {
 
 function getFormData() {
   const employeeName = ($("empName")?.value || "").trim();
-  const phoneNumberRaw = ($("empPhone")?.value || "").trim();
-  const phoneNumber = normalizePkPhone(phoneNumberRaw);
+  const phoneRaw = ($("empPhone")?.value || "").trim();
+  const phoneNumber = normalizePkPhone(phoneRaw);
+
   const cnic = ($("cnic")?.value || "").trim();
   const streetAddress = ($("streetAddress")?.value || "").trim();
   const townCity = ($("townCity")?.value || "").trim();
 
-  return { employeeName, phoneNumberRaw, phoneNumber, cnic, streetAddress, townCity };
+  return { employeeName, phoneRaw, phoneNumber, cnic, streetAddress, townCity };
 }
 
+// ---- Registration Gate (Local) ----
+// Saves which phone is registered on THIS device.
+// (Registration itself is stored in your Google Sheet Employees tab)
+function setLocalRegistered(phoneNumber) {
+  localStorage.setItem("dp_registered_phone", phoneNumber);
+}
+function getLocalRegistered() {
+  return localStorage.getItem("dp_registered_phone") || "";
+}
+function clearLocalRegistered() {
+  localStorage.removeItem("dp_registered_phone");
+}
+
+// ---- UI Switch ----
+function showRegister() {
+  $("registerCard").classList.remove("hidden");
+  $("clockCard").classList.add("hidden");
+
+  // Header logout button hidden
+  const btn = $("logoutBtn");
+  if (btn) btn.style.display = "none";
+}
+function showClock() {
+  $("registerCard").classList.add("hidden");
+  $("clockCard").classList.remove("hidden");
+
+  // Header logout button visible
+  const btn = $("logoutBtn");
+  if (btn) btn.style.display = "inline-block";
+}
+
+// ---- Timer ----
 function startTimer() {
   startTime = new Date();
   if (timerInterval) clearInterval(timerInterval);
@@ -98,64 +137,93 @@ function startTimer() {
       `${String(hr).padStart(2,"0")}:${String(min).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
   }, 1000);
 }
-
 function stopTimer() {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = null;
 }
 
-// --- Actions ---
+// ---- HERO Banner slider ----
+let heroIndex = 0;
+function renderHeroDots() {
+  const wrap = $("heroDots");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  HERO_SLIDES.forEach((_, i) => {
+    const d = document.createElement("div");
+    d.className = "dot" + (i === heroIndex ? " active" : "");
+    d.addEventListener("click", () => {
+      heroIndex = i;
+      applyHeroSlide();
+    });
+    wrap.appendChild(d);
+  });
+}
+function applyHeroSlide() {
+  const slide = HERO_SLIDES[heroIndex] || HERO_SLIDES[0];
+  const img = $("heroImg");
+  const t = $("heroTitle");
+  const s = $("heroSubtitle");
+  if (img) img.src = slide.img;
+  if (t) t.textContent = slide.title;
+  if (s) s.textContent = slide.subtitle;
+  renderHeroDots();
+}
+function startHeroAuto() {
+  applyHeroSlide();
+  setInterval(() => {
+    heroIndex = (heroIndex + 1) % HERO_SLIDES.length;
+    applyHeroSlide();
+  }, 5000);
+}
+
+// ---- Actions ----
 async function registerEmployee() {
   if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_YOUR_WEB_APP_URL_HERE")) {
-    alert("Paste your Apps Script Web App URL inside app.js (GOOGLE_SCRIPT_URL).");
+    alert("Paste your Apps Script Web App URL in app.js (GOOGLE_SCRIPT_URL).");
     return;
   }
 
-  const { employeeName, phoneNumberRaw, phoneNumber, cnic } = getFormData();
+  const { employeeName, phoneRaw, phoneNumber, cnic } = getFormData();
 
-  if (!employeeName) {
-    setStatus("Employee Name is required for registration.", false);
-    return;
-  }
-  if (!phoneNumber) {
-    setStatus("Phone Number is required for registration.", false);
-    return;
-  }
-  if (!cnic) {
-    setStatus("CNIC is required for registration.", false);
-    return;
-  }
+  if (!employeeName) return setRegStatus("Employee Name is required.", false);
+  if (!phoneNumber) return setRegStatus("Phone Number is required.", false);
+  if (!cnic) return setRegStatus("CNIC is required.", false);
 
-  setStatus("Registering employee...");
+  setRegStatus("Registering... please wait.");
 
   const resp = await sendToGoogleSheet({
     register: true,
     employeeName,
-    phoneNumber,     // IMPORTANT: send normalized
+    phoneNumber, // IMPORTANT: normalized
     cnic
   });
 
-  if (resp.status === "REGISTERED") {
-    setStatus(`Registered ✅ (${phoneNumberRaw} → ${phoneNumber})`);
-  } else if (resp.status === "ALREADY_REGISTERED") {
-    setStatus(`Already registered ✅ (${phoneNumber})`);
+  if (resp.status === "REGISTERED" || resp.status === "ALREADY_REGISTERED") {
+    setRegStatus(`Registered ✅ (${phoneRaw} → ${phoneNumber})`);
+    setLocalRegistered(phoneNumber);
+
+    // Move to clock screen
+    showClock();
+    setStatus("Ready");
+
+    // Keep phone in input (so tracking uses same)
+    $("empPhone").value = phoneNumber;
   } else {
-    setStatus("Registration failed: " + (resp.message || resp.status), false);
+    setRegStatus("Registration failed: " + (resp.message || resp.status), false);
   }
 }
 
 async function startWork() {
   if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_YOUR_WEB_APP_URL_HERE")) {
-    alert("Paste your Apps Script Web App URL inside app.js (GOOGLE_SCRIPT_URL).");
+    alert("Paste your Apps Script Web App URL in app.js (GOOGLE_SCRIPT_URL).");
     return;
   }
 
   if (tracking) return;
 
-  const { phoneNumberRaw, phoneNumber, streetAddress, townCity } = getFormData();
-
+  const { phoneRaw, phoneNumber, streetAddress, townCity } = getFormData();
   if (!phoneNumber) {
-    setStatus("Phone Number is required (must match Employees sheet).", false);
+    setStatus("Phone Number missing. Please register again.", false);
     return;
   }
 
@@ -164,11 +232,11 @@ async function startWork() {
   $("stopBtn").disabled = false;
 
   startTimer();
-  setStatus("Starting... please allow location permission.");
+  setStatus("Starting... allow location permission.");
 
   const batteryPercent = await getBatteryPercent();
 
-  // Try one-time location for ClockIn row
+  // One-time location for ClockIn row
   let latitude = "";
   let longitude = "";
 
@@ -186,25 +254,22 @@ async function startWork() {
     console.warn("START location error:", err);
   }
 
-  // Send START event
+  // START (ClockIn)
   const resp = await sendToGoogleSheet({
     eventType: "START",
-    phoneNumber,         // normalized
+    phoneNumber,
     streetAddress,
     townCity,
     batteryPercent,
     latitude,
     longitude,
-    statusNote: `ClockIn (${phoneNumberRaw} → ${phoneNumber})`
+    statusNote: `ClockIn (${phoneRaw} → ${phoneNumber})`
   });
 
-  if (resp.status === "OK") {
-    setStatus("ClockIn saved ✅");
-  } else {
-    setStatus("ClockIn failed: " + (resp.message || resp.status), false);
-  }
+  if (resp.status === "OK") setStatus("ClockIn saved ✅");
+  else setStatus("ClockIn failed: " + (resp.message || resp.status), false);
 
-  // Start live tracking (PING)
+  // Live tracking PING every 20 seconds (sheet-friendly)
   if (!navigator.geolocation) {
     setStatus("Geolocation not supported in this browser.", false);
     return;
@@ -214,7 +279,6 @@ async function startWork() {
     async (pos) => {
       if (!tracking) return;
 
-      // Throttle pings (every 20 seconds) to keep sheet clean
       const now = Date.now();
       if (now - lastPingAt < 20000) return;
       lastPingAt = now;
@@ -264,10 +328,9 @@ async function stopWork() {
     watchId = null;
   }
 
-  const { phoneNumberRaw, phoneNumber, streetAddress, townCity } = getFormData();
+  const { phoneRaw, phoneNumber, streetAddress, townCity } = getFormData();
   const batteryPercent = await getBatteryPercent();
 
-  // Try one-time location for ClockOut row
   let latitude = "";
   let longitude = "";
 
@@ -291,23 +354,57 @@ async function stopWork() {
     batteryPercent,
     latitude,
     longitude,
-    statusNote: `ClockOut (${phoneNumberRaw} → ${phoneNumber})`
+    statusNote: `ClockOut (${phoneRaw} → ${phoneNumber})`
   });
 
-  if (resp.status === "OK") {
-    setStatus("ClockOut saved ✅");
-  } else {
-    setStatus("ClockOut failed: " + (resp.message || resp.status), false);
-  }
+  if (resp.status === "OK") setStatus("ClockOut saved ✅");
+  else setStatus("ClockOut failed: " + (resp.message || resp.status), false);
 
   alert("Work tracking stopped!");
 }
 
-// --- Bind UI ---
-window.addEventListener("load", () => {
-  if ($("registerBtn")) $("registerBtn").addEventListener("click", registerEmployee);
-  if ($("startBtn")) $("startBtn").addEventListener("click", startWork);
-  if ($("stopBtn")) $("stopBtn").addEventListener("click", stopWork);
+function logout() {
+  // Only logs out locally (device), does not delete employee from sheet
+  clearLocalRegistered();
+  tracking = false;
 
-  setStatus("Ready");
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  stopTimer();
+
+  // Clear form
+  if ($("empName")) $("empName").value = "";
+  if ($("empPhone")) $("empPhone").value = "";
+  if ($("cnic")) $("cnic").value = "";
+  if ($("townCity")) $("townCity").value = "";
+  if ($("streetAddress")) $("streetAddress").value = "";
+
+  if ($("regStatus")) $("regStatus").style.display = "none";
+
+  showRegister();
+}
+
+// ---- Init ----
+window.addEventListener("load", () => {
+  // Hero
+  startHeroAuto();
+
+  // Buttons
+  $("registerBtn")?.addEventListener("click", registerEmployee);
+  $("startBtn")?.addEventListener("click", startWork);
+  $("stopBtn")?.addEventListener("click", stopWork);
+  $("logoutBtn")?.addEventListener("click", logout);
+
+  // Gate: if device already registered, go straight to Clock screen
+  const savedPhone = getLocalRegistered();
+  if (savedPhone) {
+    // Put saved phone into input so tracking uses it
+    if ($("empPhone")) $("empPhone").value = savedPhone;
+    showClock();
+    setStatus("Ready");
+  } else {
+    showRegister();
+  }
 });
