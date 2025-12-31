@@ -15,6 +15,7 @@
       --card:#ffffff;
       --muted:#666;
       --soft:#f6f6f6;
+      --panel-grey:#e6e6e6;     /* medium grey for lower half */
     }
 
     html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;}
@@ -43,7 +44,6 @@
       border:1px solid rgba(255,255,255,.10);
     }
 
-    /* Top bar */
     header{
       background: linear-gradient(90deg, var(--dp-black), #1a0000 35%, var(--dp-red));
       padding:14px 16px;
@@ -52,6 +52,7 @@
       justify-content:space-between;
       gap:12px;
     }
+
     .brand{
       display:flex;
       align-items:center;
@@ -71,7 +72,7 @@
     .title{font-size:18px;font-weight:800;line-height:1.1;margin:0;}
     .sub{font-size:12px;opacity:.9;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-    /* Hero banner */
+    /* HERO BANNER */
     .hero{
       position:relative;
       height:180px;
@@ -83,31 +84,25 @@
       height:100%;
       object-fit:cover;
       display:block;
-      filter:saturate(1.05) contrast(1.05);
+
+      /* brighten slightly to avoid “too dark” */
+      filter: brightness(1.12) contrast(1.05) saturate(1.05);
     }
+
+    /* Reduced darkness overlay (this was making it too dark) */
     .heroOverlay{
       position:absolute; inset:0;
-      background: linear-gradient(90deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,.35) 55%, rgba(0,0,0,.55) 100%),
-                  linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.75) 100%);
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,.18) 55%, rgba(0,0,0,.35) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.10) 45%, rgba(0,0,0,.45) 100%);
       display:flex;
       align-items:flex-end;
       padding:14px 16px;
       box-sizing:border-box;
     }
-    .heroText{
-      max-width:80%;
-    }
-    .heroText .h1{
-      font-size:18px;
-      font-weight:900;
-      margin:0 0 6px;
-    }
-    .heroText .h2{
-      margin:0;
-      font-size:12px;
-      opacity:.92;
-      line-height:1.35;
-    }
+    .heroText{max-width:80%;}
+    .heroText .h1{font-size:18px;font-weight:900;margin:0 0 6px;}
+    .heroText .h2{margin:0;font-size:12px;opacity:.92;line-height:1.35;}
     .dots{
       position:absolute;
       right:14px;
@@ -125,12 +120,13 @@
       border-color:rgba(255,255,255,.25);
     }
 
-    /* Content */
+    /* CONTENT AREA — change to medium grey */
     .content{
       padding:14px;
       display:flex;
       flex-direction:column;
       gap:12px;
+      background: var(--panel-grey);
     }
 
     .card{
@@ -142,19 +138,9 @@
       box-shadow:0 6px 18px rgba(0,0,0,.08);
     }
 
-    h3{
-      margin:0 0 10px;
-      font-size:15px;
-      font-weight:800;
-      color:#111;
-    }
+    h3{margin:0 0 10px;font-size:15px;font-weight:800;color:#111;}
 
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-    }
-
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
     label{display:block;font-size:12px;margin-bottom:6px;color:#111;}
     input{
       width:100%;
@@ -167,14 +153,9 @@
       background:#fff;
     }
     input:focus{border-color:#bbb; box-shadow:0 0 0 3px rgba(239,29,29,.10);}
+    input.invalid{border-color:#b00020; box-shadow:0 0 0 3px rgba(176,0,32,.12);}
 
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-top:10px;
-    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px;}
 
     button{
       border:none;
@@ -195,21 +176,15 @@
       color:#444;
       margin-top:10px;
       line-height:1.4;
-      background:var(--soft);
+      background:#f3f3f3;
       padding:10px 12px;
       border-radius:12px;
-      border:1px solid #eee;
+      border:1px solid #e7e7e7;
     }
 
-    #timer{
-      font-size:30px;
-      font-weight:900;
-      margin:10px 0 0;
-      color:#111;
-      letter-spacing:1px;
-    }
+    #timer{font-size:30px;font-weight:900;margin:10px 0 0;color:#111;letter-spacing:1px;}
 
-    #status{
+    #status, #regStatus{
       margin-top:10px;
       font-size:13px;
       padding:10px 12px;
@@ -222,16 +197,14 @@
     footer{
       padding:12px 16px;
       font-size:12px;
-      opacity:.85;
+      opacity:.9;
       text-align:center;
       border-top:1px solid rgba(255,255,255,.10);
       background:rgba(0,0,0,.25);
     }
 
-    /* Hide/show sections */
     .hidden{display:none !important;}
 
-    /* Mobile */
     @media (max-width:560px){
       .grid{grid-template-columns:1fr;}
       .hero{height:165px;}
@@ -246,8 +219,8 @@
     <header>
       <div class="brand">
         <div class="logoBox">
-          <!-- Put your logo file in repo root and name it: logo.png -->
-          <img src="logo.png" alt="DrivePK Logo" onerror="this.style.display='none'">
+          <!-- If you don't have logo.png, change this to icon.png -->
+          <img src="logo.png" alt="DrivePK Logo" onerror="this.src='icon.png'">
         </div>
         <div class="brandTxt">
           <div class="title">DrivePK Employee Tracker</div>
@@ -258,14 +231,12 @@
       <button id="logoutBtn" class="secondary" style="display:none;">Logout</button>
     </header>
 
-    <!-- HERO BANNER (Ads) -->
     <div class="hero">
-      <!-- Put your ad images in repo root: ad1.jpg, ad2.jpg, ad3.jpg (or png) -->
-      <img id="heroImg" src="ad1.jpg" alt="Advertisement Banner" onerror="this.src='ad1.jpg'">
+      <img id="heroImg" src="ad1.jpg" alt="Advertisement Banner">
       <div class="heroOverlay">
         <div class="heroText">
           <p class="h1" id="heroTitle">DrivePK Updates</p>
-          <p class="h2" id="heroSubtitle">Add any promotional images here (inspection offers, hiring, auctions, etc.).</p>
+          <p class="h2" id="heroSubtitle">Upload your own banners anytime.</p>
         </div>
       </div>
       <div class="dots" id="heroDots"></div>
@@ -273,21 +244,20 @@
 
     <div class="content">
 
-      <!-- REGISTRATION SCREEN (FIRST) -->
       <div class="card" id="registerCard">
         <h3>Employee Registration (One-Time)</h3>
 
         <div class="grid">
           <div>
-            <label>Employee Name</label>
+            <label>Employee Name <span style="color:#b00020">*</span></label>
             <input id="empName" type="text" placeholder="Dr Khan" />
           </div>
           <div>
-            <label>Phone Number (any format)</label>
+            <label>Phone Number <span style="color:#b00020">*</span></label>
             <input id="empPhone" type="tel" placeholder="0300..., 300..., +92300..., 0092300..." />
           </div>
           <div>
-            <label>CNIC</label>
+            <label>CNIC (Optional)</label>
             <input id="cnic" type="text" placeholder="61101-1234567-1" />
           </div>
           <div>
@@ -306,13 +276,12 @@
         </div>
 
         <div class="hint">
-          After registration, this device will open the Clock In/Out screen automatically for this phone number.
+          Name and phone number are required. CNIC is optional.
         </div>
 
-        <div id="regStatus" class="hint" style="display:none;"></div>
+        <div id="regStatus" style="display:none;"></div>
       </div>
 
-      <!-- CLOCK SCREEN (ONLY AFTER REGISTERED) -->
       <div class="card hidden" id="clockCard">
         <h3>Clock In / Clock Out</h3>
 
@@ -324,7 +293,7 @@
         <div id="timer">00:00:00</div>
 
         <div class="hint">
-          Please allow location permission when prompted. Tracking runs on HTTPS and records GPS in your Google Sheet.
+          Please allow location permission when prompted.
         </div>
 
         <div id="status">Status: Ready</div>
