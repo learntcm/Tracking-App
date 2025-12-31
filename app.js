@@ -1,8 +1,9 @@
-// DrivePK Employee Tracker (Login-first, no registration)
+// DrivePK Employee Tracker (Login-first)
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIeab3XNb28woA16KGEoqV10INZcK96gBYn2GhklodaRPdH4ZiA9HvzXRsCs-QW2B9ug/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIeab3XNb28woA16KGEoqV10INZcK96gBYn2GhklodaRPdH4ZiA9HvzXRsCs-QW2B9ug/exec"; 
+// Example:
+// const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxx/exec";
 
-// Hero banners (your files)
 const HERO_SLIDES = [
   { img: "ad1.png", title: "MG U9 Pickup", subtitle: "Built for Pakistan • Powered by DrivePK" },
   { img: "ad2.png", title: "GWM Tank 500", subtitle: "Luxury Meets Power • Discover on DrivePK" },
@@ -39,12 +40,24 @@ function setStatus(msg, ok = true) {
 }
 
 async function post(payload) {
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_")) {
+    throw new Error("Apps Script URL is missing in app.js (GOOGLE_SCRIPT_URL).");
+  }
+
   const res = await fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload)
   });
-  return await res.json();
+
+  const text = await res.text();
+
+  // Try JSON parse, else show raw
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("Server returned non-JSON: " + text);
+  }
 }
 
 async function getBatteryPercent() {
@@ -57,7 +70,7 @@ async function getBatteryPercent() {
   }
 }
 
-// Session stored on device (so next time no login)
+// Local session
 function saveSession(token, phone, name) {
   localStorage.setItem("dp_token", token);
   localStorage.setItem("dp_phone", phone);
@@ -87,21 +100,19 @@ function showLogin() {
   $("logoutBtn").style.display = "none";
 }
 
+// Timer
 function startTimer() {
   startTime = new Date();
   if (timerInterval) clearInterval(timerInterval);
-
   timerInterval = setInterval(() => {
     const elapsed = new Date() - startTime;
     const sec = Math.floor(elapsed / 1000) % 60;
     const min = Math.floor(elapsed / 60000) % 60;
     const hr = Math.floor(elapsed / 3600000);
-
     $("timer").textContent =
       `${String(hr).padStart(2, "0")}:${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   }, 1000);
 }
-
 function stopTimer() {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = null;
@@ -117,10 +128,7 @@ function renderDots() {
   HERO_SLIDES.forEach((_, i) => {
     const d = document.createElement("div");
     d.className = "dot" + (i === heroIndex ? " active" : "");
-    d.onclick = () => {
-      heroIndex = i;
-      applyHero();
-    };
+    d.onclick = () => { heroIndex = i; applyHero(); };
     wrap.appendChild(d);
   });
 }
@@ -144,11 +152,6 @@ function autoHero() {
 /* LOGIN */
 async function login() {
   try {
-    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_")) {
-      setLoginStatus("Apps Script URL missing in app.js", false);
-      return;
-    }
-
     const name = ($("loginName").value || "").trim();
     const phone = normalizePkPhone($("loginPhone").value || "");
     const pin = ($("loginPin").value || "").trim();
@@ -176,7 +179,7 @@ async function login() {
     showClock();
     setStatus("Ready ✅");
   } catch (e) {
-    setLoginStatus("Login error: " + String(e), false);
+    setLoginStatus(String(e), false);
   }
 }
 
@@ -186,7 +189,7 @@ async function track(eventType, extra) {
     action: "TRACK",
     token: s.token,
     phoneNumber: s.phone,
-    eventType: eventType
+    eventType
   }, extra || {}));
 }
 
@@ -204,9 +207,8 @@ async function startWork() {
   $("stopBtn").disabled = false;
 
   startTimer();
-  setStatus("Starting... please allow location permission.");
+  setStatus("Starting... allow location permission.");
 
-  // START: best-effort one-time location
   let lat = "", lng = "";
   try {
     const pos = await new Promise((resolve, reject) => {
@@ -217,9 +219,7 @@ async function startWork() {
     });
     lat = pos.coords.latitude;
     lng = pos.coords.longitude;
-  } catch {
-    // location may be blocked, still log start
-  }
+  } catch {}
 
   const battery = await getBatteryPercent();
 
@@ -233,7 +233,6 @@ async function startWork() {
   if (r.ok) setStatus("ClockIn saved ✅");
   else setStatus("ClockIn failed: " + (r.error || "Unknown"), false);
 
-  // Watch position -> PING every 20 seconds
   watchId = navigator.geolocation.watchPosition(async (pos) => {
     if (!tracking) return;
 
@@ -266,7 +265,6 @@ async function startWork() {
 
 async function stopWork() {
   tracking = false;
-
   $("startBtn").disabled = false;
   $("stopBtn").disabled = true;
 
@@ -275,7 +273,6 @@ async function stopWork() {
     watchId = null;
   }
 
-  // Stop timer AFTER stop logged
   setStatus("Stopping...");
 
   let lat = "", lng = "";
@@ -327,7 +324,6 @@ window.addEventListener("load", () => {
   $("stopBtn").addEventListener("click", stopWork);
   $("logoutBtn").addEventListener("click", logout);
 
-  // If already logged in on this device, skip login page
   const s = getSession();
   if (s.token && s.phone) {
     showClock();
@@ -337,7 +333,6 @@ window.addEventListener("load", () => {
     setLoginStatus("Ready");
   }
 
-  // Optional: allow Enter key to login
   ["loginName","loginPhone","loginPin"].forEach(id=>{
     $(id).addEventListener("keydown",(ev)=>{
       if(ev.key==="Enter") login();
