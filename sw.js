@@ -1,14 +1,15 @@
-const CACHE_NAME = 'tracker-cache-v2';
+const CACHE_NAME = 'tracker-cache-v3';
 
 const urlsToCache = [
   './',
   './index.html',
   './app.js',
   './manifest.json',
-  './icon.png',     // your PNG logo
-  './ad1.jpg',
-  './ad2.jpg',
-  './ad3.jpg'
+  './icon.png',
+  './logo.png',
+  './ad1.png',
+  './ad2.png',
+  './ad3.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -19,6 +20,8 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => response || fetch(event.request))
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
   );
 });
