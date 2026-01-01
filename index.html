@@ -12,7 +12,8 @@
     :root {
       --dp-red: #ef1d1d;
       --dp-black: #000000;
-      --bg-gray: #dcdcdc;
+      --bg-gray: #e5e5e5;
+      --card-bg: #f5f5f5;
     }
 
     html,
@@ -111,12 +112,20 @@
 
     /* HERO */
     .hero {
-      height: 260px;
+      height: 320px;
       background: #111;
       position: relative;
       z-index: 1;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
+    
+    /* Make hero banner bigger on mobile screens */
+    @media (max-width: 600px) {
+      .hero {
+        height: 400px;
+      }
+    }
+    
     .hero img {
       width: 100%;
       height: 100%;
@@ -188,11 +197,11 @@
     }
 
     .card {
-      background: #fff;
+      background: var(--card-bg);
       color: #111;
       border-radius: 14px;
       padding: 14px;
-      border: 1px solid #eee;
+      border: 1px solid #ddd;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
       margin-bottom: 12px;
     }
@@ -313,7 +322,7 @@
 
     <!-- HERO -->
     <div class="hero">
-      <img id="heroImg" src="ad1.jpg" alt="Banner">
+      <img id="heroImg" src="https://drive.google.com/uc?export=view&id=1SZUiYqIY0bOaobotDDnqOVb3tM52ScKr" alt="Banner">
       <div class="heroOverlay">
         <div class="heroText">
           <p class="heroTitle" id="heroTitle">DrivePK Updates</p>

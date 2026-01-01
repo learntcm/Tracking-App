@@ -4,10 +4,19 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvQkPXPVhuzc
 // Example:
 // const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxx/exec";
 
+// Google Drive images - convert file ID to direct view URL
+// Format: https://drive.google.com/uc?export=view&id=FILE_ID
 const HERO_SLIDES = [
-  { img: "ad1.jpg", title: "MG U9 Pickup", subtitle: "Built for Pakistan • Powered by DrivePK" },
-  { img: "ad2.jpg", title: "GWM Tank 500", subtitle: "Luxury Meets Power • Discover on DrivePK" },
-  { img: "ad3.jpg", title: "XPeng X9", subtitle: "Future-Ready EV • Explore with DrivePK" }
+  { 
+    img: "https://drive.google.com/uc?export=view&id=1SZUiYqIY0bOaobotDDnqOVb3tM52ScKr", 
+    title: "MG U9 Pickup", 
+    subtitle: "Built for Pakistan • Powered by DrivePK" 
+  },
+  { 
+    img: "https://drive.google.com/uc?export=view&id=1jBCkvQw5pp5zoxZhX5wYu4YeYe6OaP-l", 
+    title: "GWM Tank 500", 
+    subtitle: "Luxury Meets Power • Discover on DrivePK" 
+  }
 ];
 
 let deferredPrompt = null;
