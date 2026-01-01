@@ -7,7 +7,7 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvQkPXPVhuzc
 const HERO_SLIDES = [
   { img: "ad1.png", title: "MG U9 Pickup", subtitle: "Built for Pakistan • Powered by DrivePK" },
   { img: "ad2.png", title: "GWM Tank 500", subtitle: "Luxury Meets Power • Discover on DrivePK" },
-  { img: "ad3.png", title: "Dr Khan" }
+  { img: "ad3.png", title: }
 ];
 
 let deferredPrompt = null;
