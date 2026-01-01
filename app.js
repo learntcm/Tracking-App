@@ -20,6 +20,13 @@ let heroAutoInterval = null;
 
 const FALLBACK_IMAGE = "icon.png";
 
+function getLocationErrorMessage(err) {
+  if (err.code === 1) return "Location permission denied. Please enable location access in your browser settings.";
+  if (err.code === 2) return "Location unavailable. Please check your device GPS settings.";
+  if (err.code === 3) return "Location request timed out. Continuing without precise location.";
+  return "Location error: " + err.message;
+}
+
 const $ = (id) => document.getElementById(id);
 
 function normalizePkPhone(input) {
@@ -261,10 +268,7 @@ async function startWork() {
     lng = pos.coords.longitude;
     setStatus("Location acquired ✅");
   } catch (err) {
-    const errMsg = err.code === 1 ? "Location permission denied. Please enable location access in your browser settings." :
-                   err.code === 2 ? "Location unavailable. Please check your device GPS settings." :
-                   err.code === 3 ? "Location request timed out. Continuing without precise location." :
-                   "Location error: " + err.message;
+    const errMsg = getLocationErrorMessage(err);
     setStatus(errMsg, false);
     console.warn("Location error:", err);
     // Continue without location - server will handle empty coordinates
@@ -312,10 +316,7 @@ async function startWork() {
       setStatus("PING error: " + err.message, false);
     }
   }, (err) => {
-    const errMsg = err.code === 1 ? "Location permission revoked" :
-                   err.code === 2 ? "Location unavailable" :
-                   err.code === 3 ? "Location timeout" :
-                   "Location error: " + err.message;
+    const errMsg = getLocationErrorMessage(err);
     setStatus(errMsg, false);
     console.warn("Watch position error:", err);
   }, {
