@@ -16,6 +16,9 @@ let startTime = null;
 let tracking = false;
 let watchId = null;
 let lastPingAt = 0;
+let heroAutoInterval = null;
+
+const FALLBACK_IMAGE = "icon.png";
 
 const $ = (id) => document.getElementById(id);
 
@@ -48,18 +51,12 @@ async function post(payload) {
   try {
     const res = await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
-      mode: "no-cors",
       headers: { 
         "Content-Type": "text/plain;charset=utf-8"
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      redirect: "follow"
     });
-
-    // In no-cors mode, response will be opaque, so we assume success
-    // Google Apps Script will handle the CORS properly on its end
-    if (res.type === 'opaque') {
-      return { ok: true };
-    }
 
     if (!res.ok) {
       throw new Error(`Fetch error ${res.status}: ${res.statusText}`);
@@ -71,12 +68,17 @@ async function post(payload) {
     try {
       return JSON.parse(text);
     } catch {
-      throw new Error("Server returned non-JSON: " + text);
+      // If we get a response but it's not JSON, log it and return success
+      // Google Apps Script sometimes returns HTML on success
+      console.warn("Server returned non-JSON response:", text);
+      return { ok: true };
     }
   } catch (err) {
     // Better error handling for network issues
-    if (err.message.includes("Failed to fetch")) {
-      throw new Error("Network error: Please check your internet connection or CORS settings.");
+    if (err.message.includes("Failed to fetch") || err.name === "TypeError") {
+      console.error("Network error:", err);
+      // CORS errors appear as "Failed to fetch" - provide helpful message
+      throw new Error("Network error: Check internet connection. If using Google Apps Script, ensure the script is deployed as 'Anyone' can access.");
     }
     throw err;
   }
@@ -167,14 +169,12 @@ function applyHero() {
     console.warn("Failed to load hero image:", s.img);
     // Fallback to icon if hero image fails
     this.onerror = null;
-    this.src = "icon.png";
+    this.src = FALLBACK_IMAGE;
   };
   $("heroTitle").textContent = s.title;
   $("heroSubtitle").textContent = s.subtitle;
   renderDots();
 }
-
-let heroAutoInterval = null;
 
 function autoHero() {
   // Clear any existing interval to prevent duplicates
@@ -263,7 +263,7 @@ async function startWork() {
   } catch (err) {
     const errMsg = err.code === 1 ? "Location permission denied. Please enable location access in your browser settings." :
                    err.code === 2 ? "Location unavailable. Please check your device GPS settings." :
-                   err.code === 3 ? "Location request timed out. Retrying..." :
+                   err.code === 3 ? "Location request timed out. Continuing without precise location." :
                    "Location error: " + err.message;
     setStatus(errMsg, false);
     console.warn("Location error:", err);
