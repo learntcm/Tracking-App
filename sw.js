@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tracker-cache-v3';
+const CACHE_NAME = 'tracker-cache-v4';
 
 const urlsToCache = [
   './',
@@ -7,9 +7,9 @@ const urlsToCache = [
   './manifest.json',
   './icon.png',
   './logo.png',
-  './ad1.png',
-  './ad2.png',
-  './ad3.png'
+  './ad1.jpg',
+  './ad2.jpg',
+  './ad3.jpg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -5,9 +5,9 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvQkPXPVhuzc
 // const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxx/exec";
 
 const HERO_SLIDES = [
-  { img: "ad1.png", title: "MG U9 Pickup", subtitle: "Built for Pakistan • Powered by DrivePK" },
-  { img: "ad2.png", title: "GWM Tank 500", subtitle: "Luxury Meets Power • Discover on DrivePK" },
-  { img: "ad3.png", title: "XPeng X9", subtitle: "Future-Ready EV • Explore with DrivePK" }
+  { img: "ad1.jpg", title: "MG U9 Pickup", subtitle: "Built for Pakistan • Powered by DrivePK" },
+  { img: "ad2.jpg", title: "GWM Tank 500", subtitle: "Luxury Meets Power • Discover on DrivePK" },
+  { img: "ad3.jpg", title: "XPeng X9", subtitle: "Future-Ready EV • Explore with DrivePK" }
 ];
 
 let deferredPrompt = null;
@@ -16,6 +16,16 @@ let startTime = null;
 let tracking = false;
 let watchId = null;
 let lastPingAt = 0;
+let heroAutoInterval = null;
+
+const FALLBACK_IMAGE = "icon.png";
+
+function getLocationErrorMessage(err) {
+  if (err.code === 1) return "Location permission denied. Please enable location access in your browser settings.";
+  if (err.code === 2) return "Location unavailable. Please check your device GPS settings.";
+  if (err.code === 3) return "Location request timed out. Continuing without precise location.";
+  return "Location error: " + err.message;
+}
 
 const $ = (id) => document.getElementById(id);
 
@@ -45,25 +55,39 @@ async function post(payload) {
     throw new Error("Apps Script URL is missing in app.js (GOOGLE_SCRIPT_URL).");
   }
 
-  const res = await fetch(GOOGLE_SCRIPT_URL, {
-    method: "POST",
-    headers: { 
-      "Content-Type": "text/plain;charset=utf-8"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!res.ok) {
-    throw new Error(`Fetch error ${res.status}: ${res.statusText}`);
-  }
-
-  const text = await res.text();
-
-  // Try JSON parse, else show raw
   try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error("Server returned non-JSON: " + text);
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload),
+      redirect: "follow"
+    });
+
+    if (!res.ok) {
+      throw new Error(`Fetch error ${res.status}: ${res.statusText}`);
+    }
+
+    const text = await res.text();
+
+    // Try JSON parse, else show raw
+    try {
+      return JSON.parse(text);
+    } catch {
+      // If we get a response but it's not JSON, log it and return success
+      // Google Apps Script sometimes returns HTML on success
+      console.warn("Server returned non-JSON response:", text);
+      return { ok: true };
+    }
+  } catch (err) {
+    // Better error handling for network issues
+    if (err.message.includes("Failed to fetch") || err.name === "TypeError") {
+      console.error("Network error:", err);
+      // CORS errors appear as "Failed to fetch" - provide helpful message
+      throw new Error("Network error: Check internet connection. If using Google Apps Script, ensure the script is deployed as 'Anyone' can access.");
+    }
+    throw err;
   }
 }
 
@@ -146,15 +170,27 @@ function renderDots() {
 
 function applyHero() {
   const s = HERO_SLIDES[heroIndex];
-  $("heroImg").src = s.img;
+  const heroImg = $("heroImg");
+  heroImg.src = s.img;
+  heroImg.onerror = function() {
+    console.warn("Failed to load hero image:", s.img);
+    // Fallback to icon if hero image fails
+    this.onerror = null;
+    this.src = FALLBACK_IMAGE;
+  };
   $("heroTitle").textContent = s.title;
   $("heroSubtitle").textContent = s.subtitle;
   renderDots();
 }
 
 function autoHero() {
+  // Clear any existing interval to prevent duplicates
+  if (heroAutoInterval) {
+    clearInterval(heroAutoInterval);
+  }
+  
   applyHero();
-  setInterval(() => {
+  heroAutoInterval = setInterval(() => {
     heroIndex = (heroIndex + 1) % HERO_SLIDES.length;
     applyHero();
   }, 5000);
@@ -218,7 +254,7 @@ async function startWork() {
   $("stopBtn").disabled = false;
 
   startTimer();
-  setStatus("Starting... allow location permission.");
+  setStatus("Starting... requesting location permission.");
 
   let lat = "", lng = "";
   try {
@@ -230,19 +266,29 @@ async function startWork() {
     });
     lat = pos.coords.latitude;
     lng = pos.coords.longitude;
-  } catch {}
+    setStatus("Location acquired ✅");
+  } catch (err) {
+    const errMsg = getLocationErrorMessage(err);
+    setStatus(errMsg, false);
+    console.warn("Location error:", err);
+    // Continue without location - server will handle empty coordinates
+  }
 
   const battery = await getBatteryPercent();
 
-  const r = await track("START", {
-    batteryPercent: battery,
-    latitude: lat,
-    longitude: lng,
-    statusNote: "ClockIn"
-  });
+  try {
+    const r = await track("START", {
+      batteryPercent: battery,
+      latitude: lat,
+      longitude: lng,
+      statusNote: "ClockIn"
+    });
 
-  if (r.ok) setStatus("ClockIn saved ✅");
-  else setStatus("ClockIn failed: " + (r.error || "Unknown"), false);
+    if (r.ok) setStatus("ClockIn saved ✅");
+    else setStatus("ClockIn failed: " + (r.error || "Unknown"), false);
+  } catch (err) {
+    setStatus("ClockIn error: " + err.message, false);
+  }
 
   watchId = navigator.geolocation.watchPosition(async (pos) => {
     if (!tracking) return;
@@ -253,20 +299,26 @@ async function startWork() {
 
     const batteryLive = await getBatteryPercent();
 
-    const rr = await track("PING", {
-      batteryPercent: batteryLive,
-      latitude: pos.coords.latitude,
-      longitude: pos.coords.longitude,
-      statusNote: `Tracking ±${Math.round(pos.coords.accuracy)}m`
-    });
+    try {
+      const rr = await track("PING", {
+        batteryPercent: batteryLive,
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        statusNote: `Tracking ±${Math.round(pos.coords.accuracy)}m`
+      });
 
-    if (rr.ok) {
-      setStatus(`Tracking: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
-    } else {
-      setStatus("PING failed: " + (rr.error || "Unknown"), false);
+      if (rr.ok) {
+        setStatus(`Tracking: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
+      } else {
+        setStatus("PING failed: " + (rr.error || "Unknown"), false);
+      }
+    } catch (err) {
+      setStatus("PING error: " + err.message, false);
     }
   }, (err) => {
-    setStatus("Location error: " + err.message, false);
+    const errMsg = getLocationErrorMessage(err);
+    setStatus(errMsg, false);
+    console.warn("Watch position error:", err);
   }, {
     enableHighAccuracy: true,
     maximumAge: 0,
@@ -296,19 +348,26 @@ async function stopWork() {
     });
     lat = pos.coords.latitude;
     lng = pos.coords.longitude;
-  } catch {}
+  } catch (err) {
+    console.warn("Location error on stop:", err);
+    // Continue without location - server will handle empty coordinates
+  }
 
   const battery = await getBatteryPercent();
 
-  const r = await track("STOP", {
-    batteryPercent: battery,
-    latitude: lat,
-    longitude: lng,
-    statusNote: "ClockOut"
-  });
+  try {
+    const r = await track("STOP", {
+      batteryPercent: battery,
+      latitude: lat,
+      longitude: lng,
+      statusNote: "ClockOut"
+    });
 
-  if (r.ok) setStatus("ClockOut saved ✅");
-  else setStatus("ClockOut failed: " + (r.error || "Unknown"), false);
+    if (r.ok) setStatus("ClockOut saved ✅");
+    else setStatus("ClockOut failed: " + (r.error || "Unknown"), false);
+  } catch (err) {
+    setStatus("ClockOut error: " + err.message, false);
+  }
 
   stopTimer();
   alert("Stopped!");
@@ -329,6 +388,13 @@ function logout() {
 
 /** INIT */
 window.addEventListener("load", () => {
+  // Register service worker for PWA functionality
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registered:', reg))
+      .catch(err => console.error('Service Worker registration failed:', err));
+  }
+
   autoHero();
 
   $("loginBtn").addEventListener("click", login);
@@ -356,19 +422,36 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); // Prevent default install prompt
   deferredPrompt = e; // Save the install event
   const installBtn = document.getElementById('installBtn');
-  if (installBtn) installBtn.style.display = 'block';
+  if (installBtn) {
+    installBtn.style.display = 'block';
+    console.log("PWA install prompt available");
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('PWA installed successfully');
+  deferredPrompt = null;
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.style.display = 'none';
 });
 
 function installPWA() {
-  if (!deferredPrompt) return;
+  if (!deferredPrompt) {
+    alert("App is already installed or installation not available on this device.");
+    return;
+  }
 
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then((choiceResult) => {
     if (choiceResult.outcome === 'accepted') {
       console.log("User accepted the install prompt ✅");
+      const installBtn = document.getElementById('installBtn');
+      if (installBtn) installBtn.style.display = 'none';
     } else {
       console.log("User dismissed the install prompt ❌");
     }
     deferredPrompt = null;
+  }).catch((err) => {
+    console.error("Error during PWA installation:", err);
   });
 }
