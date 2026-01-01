@@ -261,6 +261,27 @@
       display: none !important;
     }
 
+    #installBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--dp-red);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-weight: 900;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(239, 29, 29, 0.4);
+      z-index: 1000;
+      display: none;
+    }
+    #installBtn:hover {
+      background: #d11818;
+      box-shadow: 0 6px 16px rgba(239, 29, 29, 0.6);
+    }
+
     footer {
       background: rgba(0, 0, 0, 0.22);
       border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -292,7 +313,7 @@
 
     <!-- HERO -->
     <div class="hero">
-      <img id="heroImg" src="ad1.png" alt="Banner">
+      <img id="heroImg" src="ad1.jpg" alt="Banner">
       <div class="heroOverlay">
         <div class="heroText">
           <p class="heroTitle" id="heroTitle">DrivePK Updates</p>
@@ -348,8 +369,10 @@
 
     <footer>DrivePK • Internal Staff Use</footer>
 
-    <script src="app.js"></script>
-    <button id="installBtn" style="display:none;" onclick="installPWA()">Install App</button>
+  </div>
+
+  <button id="installBtn" onclick="installPWA()">📱 Install App</button>
    
+  <script src="app.js"></script>
 </body>
 </html>
